@@ -4,10 +4,12 @@ public class OrderProcessor {
     
     private PaymentStrategy payStrategy;
     private DeliveryStrategy delStrategy;
+    private DiscountStrategy disStrategy;
 
-    public OrderProcessor(PaymentStrategy payStrategy, DeliveryStrategy delStrategy){
+    public OrderProcessor(PaymentStrategy payStrategy, DeliveryStrategy delStrategy, DiscountStrategy disStrategy){
         this.payStrategy = payStrategy;
         this.delStrategy = delStrategy;
+        this.disStrategy = disStrategy;
     }
 
     public void processOrder(Integer price){
@@ -18,7 +20,7 @@ public class OrderProcessor {
     
     public void deliveryPrice(DeliveryEnum type){
         StringBuilder sb = new StringBuilder();
-        sb.append("["+type+"] $");
+        sb.append("["+type.getName()+" 배송] $");
         sb.append(type.getCharge());
         sb.append(" 배송 비용");
         System.out.println(sb.toString());
@@ -35,15 +37,8 @@ public class OrderProcessor {
     }
 
     public void totalPrice(Integer price){
-        Integer total = productDiscount(price) + delStrategy.getCharge();
+        double total = this.disStrategy.discount(price+delStrategy.getCharge());
         System.out.println("총 결제 금액: $"+ total);
-    }
-
-    public Integer productDiscount(Integer price){
-        Integer standardPrice = 50;
-        Integer discount = 5;
-
-        return price > standardPrice ? price-discount : price;
     }
 
     public boolean check(PaymentEnum type){
