@@ -5,11 +5,13 @@ public class OrderProcessor {
     private PaymentStrategy payStrategy;
     private DeliveryStrategy delStrategy;
     private DiscountStrategy disStrategy;
+    private MessageHelper message;
 
     public OrderProcessor(PaymentStrategy payStrategy, DeliveryStrategy delStrategy, DiscountStrategy disStrategy){
         this.payStrategy = payStrategy;
         this.delStrategy = delStrategy;
         this.disStrategy = disStrategy;
+        this.message = MessageHelper.getInstance();
     }
 
     public void processOrder(Integer price){
@@ -19,18 +21,16 @@ public class OrderProcessor {
     }
     
     public void deliveryPrice(DeliveryEnum type){
-        StringBuilder sb = new StringBuilder();
-        sb.append("["+type.getName()+" 배송] $");
-        sb.append(type.getCharge());
-        sb.append(" 배송 비용");
-        System.out.println(sb.toString());
+        String title = type.getName();
+        String context = "$ "+type.getCharge()+" 배송 비용";
+        message.printMessage(title, context);
     }
 
     public void paymentMessage(PaymentEnum type){
-        StringBuilder sb = new StringBuilder();
-        sb.append("["+type.getDisplayName()+"] 유효성 검사 완료");
+        String title = type.getDisplayName();
+        String context = "유효성 검사 완료";
         if(check(type)){
-            System.out.println(sb.toString());
+            message.printMessage(title, context);
         }else{
             throw new IllegalArgumentException("유효성 검사 실패");
         }
@@ -38,7 +38,8 @@ public class OrderProcessor {
 
     public void totalPrice(Integer price){
         double total = this.disStrategy.discount(price+delStrategy.getCharge());
-        System.out.println("총 결제 금액: $"+ total);
+        String context = String.format("총 결제 금액: $%.2f", total);
+        message.printMessage(context);
     }
 
     public boolean check(PaymentEnum type){
